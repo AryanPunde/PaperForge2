@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Document Scanner - History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-2">
+            <i data-feather="folder" class="me-2 text-info"></i>
+            Scan History
+        </h2>
+        <p class="text-muted mb-0">Manage your document archive</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+            <i data-feather="arrow-left" class="me-2"></i>
+            Back to Home
+        </a>
+    </div>
+</div>
+
+{% if scans %}
+<div class="row">
+    {% for scan in scans %}
+    <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card h-100 hover-lift">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-2">
+                            <i data-feather="file-text" class="me-2 text-primary"></i>
+                            {{ scan.filename[:25] }}{% if scan.filename|length > 25 %}...{% endif %}
+                        </h6>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <small class="text-muted">
+                                <i data-feather="calendar" class="me-1" style="width: 12px; height: 12px;"></i>
+                                {{ scan.timestamp }}
+                            </small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-primary">
+                                {{ scan.pages }} page{{ 's' if scan.pages != 1 else '' }}
+                            </span>
+                            <span class="badge bg-success">PDF</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('download_pdf', scan_id=scan.id) }}" class="btn btn-primary btn-sm">
+                        <i data-feather="download" class="me-2"></i>
+                        Download PDF
+                    </a>
+                    
+                    <form action="{{ url_for('delete_scan', scan_id=scan.id) }}" method="post" 
+                          onsubmit="return confirm('Are you sure you want to delete this scan permanently?')" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                            <i data-feather="trash-2" class="me-2"></i>
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    <i data-feather="hash" class="me-1" style="width: 12px; height: 12px;"></i>
+                    ID: {{ scan.id }}
+                </small>
+                <small class="status-online">
+                    <i data-feather="check-circle" class="me-1 text-success" style="width: 12px; height: 12px;"></i>
+                    Available
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination placeholder for future enhancement -->
+<div class="mt-4">
+    <nav aria-label="History pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <span class="page-link">Showing {{ scans|length }} scan(s)</span>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+{% else %}
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i data-feather="folder" style="width: 64px; height: 64px;" class="text-muted"></i>
+    </div>
+    <h4 class="text-muted">No Scans Yet</h4>
+    <p class="text-muted mb-4">You haven't created any PDF scans yet. Start by capturing or uploading an image.</p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{{ url_for('capture') }}" class="btn btn-primary">
+            <i data-feather="camera" class="me-2"></i>
+            Take Photo
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+            <i data-feather="upload" class="me-2"></i>
+            Upload Image
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Summary Stats -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-subtitle mb-3 text-muted">Statistics</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="h4 mb-1">{{ scans|length }}</div>
+                            <small class="text-muted">Total Scans</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="h4 mb-1">{{ scans|sum(attribute='pages') or 0 }}</div>
+                            <small class="text-muted">Total Pages</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="h4 mb-1">
+                                {% if scans %}
+                                    {{ (scans|sum(attribute='pages') / scans|length)|round(1) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">Avg Pages/Scan</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
